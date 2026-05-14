@@ -137,7 +137,22 @@ async function run() {
       }
     }
 
-  
+    async function addTimelineEntry(issueId, entry) {
+      // entry: { status, message, updatedBy, role }
+      if (!ObjectId.isValid(issueId)) throw new Error("Invalid issueId");
+      const timelineItem = {
+        status: entry.status || null,
+        message: entry.message || "",
+        updatedBy: entry.updatedBy || "System",
+        role: entry.role || "System", // "Admin" | "Staff" | "Citizen" | "System"
+        date: new Date(),
+      };
+
+      return issuesCollection.updateOne(
+        { _id: new ObjectId(issueId) },
+        { $push: { timeline: timelineItem } }
+      );
+    }
 
     // ------------------------
     // ROUTES
@@ -1771,3 +1786,5 @@ run().catch(console.dir);
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+
+module.exports = app;
