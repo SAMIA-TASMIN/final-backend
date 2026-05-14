@@ -1,0 +1,5 @@
+.env
+node_modules
+secretkey.json
+.vercel
+.env*.local
