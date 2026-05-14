@@ -5,3 +5,4 @@ secretkey.json
 .env*.local
 
 .vercel
+.env*.local
