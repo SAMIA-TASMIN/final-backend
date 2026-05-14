@@ -119,7 +119,23 @@ async function run() {
         res.status(500).send({ message: "Internal server error" });
       }
     }
-  
+    async function verifyStaff(req, res, next) {
+      try {
+        if (!req.decoded_email) {
+          return res.status(401).send({ message: "Unauthorized" });
+        }
+        const staffUser = await usersCollection.findOne({
+          email: req.decoded_email,
+        });
+        if (!staffUser || staffUser.role !== "staff") {
+          return res.status(403).send({ message: "Forbidden: staff only" });
+        }
+        next();
+      } catch (err) {
+        console.error("verifyStaff error:", err);
+        res.status(500).send({ message: "Internal server error" });
+      }
+    }
 
     async function addTimelineEntry(issueId, entry) {
       // entry: { status, message, updatedBy, role }
