@@ -586,22 +586,7 @@ app.get("/issues/:id", async (req, res) => {
   }
 });
 
-app.patch("/issues/:id", verifyFbToken, async (req, res) => {
-  try {
-    const id = req.params.id;
-    if (!ObjectId.isValid(id)) return res.status(400).send({ message: "Invalid ID" });
-    const issue = await issuesCollection.findOne({ _id: new ObjectId(id) });
-    if (!issue) return res.status(404).send({ message: "Issue not found" });
-    if (issue.userEmail !== req.decoded_email) return res.status(403).send({ message: "Forbidden: only owner can edit this issue" });
-    if (issue.status !== "Pending") return res.status(400).send({ message: "Only pending issues can be edited" });
-    const { title, description, category, image } = req.body;
-    const updateDoc = { $set: { ...(title && { title }), ...(description && { description }), ...(category && { category }), ...(image && { image }), updatedAt: new Date() } };
-    await issuesCollection.updateOne({ _id: new ObjectId(id) }, updateDoc);
-    res.status(200).send({ message: "Issue updated successfully" });
-  } catch (err) {
-    res.status(500).send({ message: "Internal server error" });
-  }
-});
+
 
 app.delete("/issues/:id", verifyFbToken, async (req, res) => {
   try {
@@ -660,7 +645,7 @@ app.post("/issues/:id/reject", async (req, res) => {
   }
 });
 
-app.patch("/issues/upvote/:id", async (req, res) => {
+app.patch("/issues/upvote/:id",verifyFbToken, async (req, res) => {
   try {
     const issueId = req.params.id;
     const userEmail = req.decoded_email;
@@ -693,6 +678,23 @@ app.patch("/issues/:id/status", verifyFbToken, async (req, res) => {
     res.send({ message: "Status updated successfully" });
   } catch (err) {
     res.status(500).send({ message: "Status update failed" });
+  }
+});
+
+app.patch("/issues/:id", verifyFbToken, async (req, res) => {
+  try {
+    const id = req.params.id;
+    if (!ObjectId.isValid(id)) return res.status(400).send({ message: "Invalid ID" });
+    const issue = await issuesCollection.findOne({ _id: new ObjectId(id) });
+    if (!issue) return res.status(404).send({ message: "Issue not found" });
+    if (issue.userEmail !== req.decoded_email) return res.status(403).send({ message: "Forbidden: only owner can edit this issue" });
+    if (issue.status !== "Pending") return res.status(400).send({ message: "Only pending issues can be edited" });
+    const { title, description, category, image } = req.body;
+    const updateDoc = { $set: { ...(title && { title }), ...(description && { description }), ...(category && { category }), ...(image && { image }), updatedAt: new Date() } };
+    await issuesCollection.updateOne({ _id: new ObjectId(id) }, updateDoc);
+    res.status(200).send({ message: "Issue updated successfully" });
+  } catch (err) {
+    res.status(500).send({ message: "Internal server error" });
   }
 });
 
